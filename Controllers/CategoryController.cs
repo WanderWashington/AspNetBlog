@@ -1,5 +1,7 @@
 ﻿using AspNetBlog.Data;
+using AspNetBlog.Extensions;
 using AspNetBlog.Models;
+using AspNetBlog.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,15 +17,15 @@ namespace AspNetBlog.Controllers
             try
             {
                 var categories = await context.Categories.ToListAsync();
-                return Ok(categories);
+                return Ok(new ResultViewModel<List<Category>>(categories));
             }
             catch (DbUpdateException ex)
             {
                 return StatusCode(500, "05XE4 - Não foi possível incluir a categoria");
             }
-            catch (Exception e)
+            catch
             {
-                return StatusCode(500, "05XE5 - Falha interna no servidor");
+                return StatusCode(500, new ResultViewModel<List<Category>>(error: "05XE5 - Falha interna no servidor"));
             }
         }
 
@@ -37,9 +39,9 @@ namespace AspNetBlog.Controllers
                 var category = await context.Categories.FirstOrDefaultAsync(x => x.Id == id);
 
                 if (category == null)
-                    return NotFound();
+                    return NotFound(new ResultViewModel<Category>(error:"Conteúdo não encontrado"));
 
-                return Ok(category);
+                return Ok(new ResultViewModel<Category>(category));
             }
             catch (DbUpdateException ex)
             {
@@ -47,28 +49,37 @@ namespace AspNetBlog.Controllers
             }
             catch (Exception e)
             {
-                return StatusCode(500, "05XE7 - Falha interna no servidor");
+                return StatusCode(500, new ResultViewModel<List<Category>>(error: "05XE7 - Falha interna no servidor"));
             }
         }
 
         [HttpPost("v1/categories")]
         public async Task<IActionResult> PostAsync(
-            [FromBody] Category category,
+            [FromBody] EditorCategoryViewModel model,
             [FromServices] BlogDataContext context)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(new ResultViewModel<Category>(ModelState.GetErrors()));
+
             try
             {
+                var category = new Category
+                {
+                    Id = 0,
+                    Name = model.Name,
+                    Slug = model.Slug.ToLower()
+                };
                 await context.Categories.AddAsync(category);
                 await context.SaveChangesAsync();
-                return Created($"v1/categories/{category.Id}", category);
+                return Created($"v1/categories/{category.Id}", new ResultViewModel<Category>(category));
             }
             catch(DbUpdateException ex)
             {
-                return StatusCode(500, "05XE9 - Não foi possível incluir a categoria");
+                return StatusCode(500, new ResultViewModel<Category>("05XE9 - Não foi possível incluir a categoria"));
             }
             catch (Exception e)
             {
-                return StatusCode(500, "05XE10 - Falha interna no servidor");
+                return StatusCode(500, new ResultViewModel<Category>("05XE10 - Falha interna no servidor"));
             }
            
         }
@@ -76,30 +87,29 @@ namespace AspNetBlog.Controllers
         [HttpPut("v1/categories/{id:int}")]
         public async Task<IActionResult> PostAsync(
             [FromRoute] int id,
-            [FromBody] Category model,
+            [FromBody] EditorCategoryViewModel model,
             [FromServices] BlogDataContext context)
         {
             try
             {
                 var category = await context.Categories.FirstOrDefaultAsync(x => x.Id == id);
                 if (category == null)
-                    return NotFound();
+                    return NotFound(new ResultViewModel<Category>("Conteúdo não encontrado"));
                 category.Name = model.Name;
                 category.Slug = model.Slug;
-                category.Posts = model.Posts;
 
                 context.Categories.Update(category);
                 await context.SaveChangesAsync();
 
-                return Ok(category);
+                return Ok(new ResultViewModel<Category>(category));
             }
             catch (DbUpdateException ex)
             {
-                return StatusCode(500, "05XE11 - Não foi possível atualizar a categoria");
+                return StatusCode(500, new ResultViewModel<Category>("05XE11 - Não foi possível atualizar a categoria"));
             }
             catch (Exception e)
             {
-                return StatusCode(500, "05XE12 - Falha interna no servidor");
+                return StatusCode(500, new ResultViewModel<Category>("05XE12 - Falha interna no servidor"));
             }
         }
         [HttpDelete]
@@ -116,15 +126,15 @@ namespace AspNetBlog.Controllers
 
                 context.Categories.Remove(category);
                 await context.SaveChangesAsync();
-                return Ok();
+                return Ok(new ResultViewModel<Category>(category));
             }
             catch (DbUpdateException ex)
             {
-                return StatusCode(500, "05XE13 - Não foi possível excluir a categoria");
+                return StatusCode(500, new ResultViewModel<Category>("05XE13 - Não foi possível excluir a categoria"));
             }
             catch (Exception e)
             {
-                return StatusCode(500, "05XE14 - Falha interna no servidor");
+                return StatusCode(500, new ResultViewModel<Category>("05XE14 - Falha interna no servidor"));
             }
         }
     }
