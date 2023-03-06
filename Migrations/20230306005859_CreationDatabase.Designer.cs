@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AspNetBlog.Migrations
 {
     [DbContext(typeof(BlogDataContext))]
-    [Migration("20230227001446_CreateDatabase")]
-    partial class CreateDatabase
+    [Migration("20230306005859_CreationDatabase")]
+    partial class CreationDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace AspNetBlog.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("BlogEf.Models.Category", b =>
+            modelBuilder.Entity("AspNetBlog.Models.Category", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -53,7 +53,7 @@ namespace AspNetBlog.Migrations
                     b.ToTable("Category", (string)null);
                 });
 
-            modelBuilder.Entity("BlogEf.Models.Post", b =>
+            modelBuilder.Entity("AspNetBlog.Models.Post", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -104,7 +104,7 @@ namespace AspNetBlog.Migrations
                     b.ToTable("Post", (string)null);
                 });
 
-            modelBuilder.Entity("BlogEf.Models.Role", b =>
+            modelBuilder.Entity("AspNetBlog.Models.Role", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -125,7 +125,7 @@ namespace AspNetBlog.Migrations
                     b.ToTable("Role");
                 });
 
-            modelBuilder.Entity("BlogEf.Models.Tag", b =>
+            modelBuilder.Entity("AspNetBlog.Models.Tag", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -146,7 +146,7 @@ namespace AspNetBlog.Migrations
                     b.ToTable("Tag");
                 });
 
-            modelBuilder.Entity("BlogEf.Models.User", b =>
+            modelBuilder.Entity("AspNetBlog.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -155,19 +155,19 @@ namespace AspNetBlog.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Bio")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(160)
+                        .HasColumnType("VARCHAR")
+                        .HasColumnName("Email");
 
                     b.Property<string>("Github")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Image")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -178,7 +178,8 @@ namespace AspNetBlog.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("VARCHAR");
 
                     b.Property<string>("Slug")
                         .IsRequired()
@@ -224,16 +225,16 @@ namespace AspNetBlog.Migrations
                     b.ToTable("UserRole");
                 });
 
-            modelBuilder.Entity("BlogEf.Models.Post", b =>
+            modelBuilder.Entity("AspNetBlog.Models.Post", b =>
                 {
-                    b.HasOne("BlogEf.Models.User", "Author")
+                    b.HasOne("AspNetBlog.Models.User", "Author")
                         .WithMany("Posts")
                         .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_Post_Author");
 
-                    b.HasOne("BlogEf.Models.Category", "Category")
+                    b.HasOne("AspNetBlog.Models.Category", "Category")
                         .WithMany("Posts")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -247,14 +248,14 @@ namespace AspNetBlog.Migrations
 
             modelBuilder.Entity("PostTag", b =>
                 {
-                    b.HasOne("BlogEf.Models.Tag", null)
+                    b.HasOne("AspNetBlog.Models.Tag", null)
                         .WithMany()
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_PostTag_PostId");
 
-                    b.HasOne("BlogEf.Models.Post", null)
+                    b.HasOne("AspNetBlog.Models.Post", null)
                         .WithMany()
                         .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -264,14 +265,14 @@ namespace AspNetBlog.Migrations
 
             modelBuilder.Entity("UserRole", b =>
                 {
-                    b.HasOne("BlogEf.Models.Role", null)
+                    b.HasOne("AspNetBlog.Models.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_UserRole_RoleId");
 
-                    b.HasOne("BlogEf.Models.User", null)
+                    b.HasOne("AspNetBlog.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -279,12 +280,12 @@ namespace AspNetBlog.Migrations
                         .HasConstraintName("FK_UserRole_UserId");
                 });
 
-            modelBuilder.Entity("BlogEf.Models.Category", b =>
+            modelBuilder.Entity("AspNetBlog.Models.Category", b =>
                 {
                     b.Navigation("Posts");
                 });
 
-            modelBuilder.Entity("BlogEf.Models.User", b =>
+            modelBuilder.Entity("AspNetBlog.Models.User", b =>
                 {
                     b.Navigation("Posts");
                 });

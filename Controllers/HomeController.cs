@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AspNetBlog.Attributes;
+using Microsoft.AspNetCore.Mvc;
 
 //Health Check
 namespace AspNetBlog.Controllers
@@ -9,6 +10,7 @@ namespace AspNetBlog.Controllers
     {   
         //HealthCheck
         [HttpGet("")]
+        [ApiKey]
         public IActionResult Get()
         {
             return Ok();
