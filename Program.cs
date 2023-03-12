@@ -8,24 +8,23 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 ConfigureAuthentication(builder);
-
 ConfigureMvc(builder);
-
 ConfigureServices(builder);
 
 var app = builder.Build();
 //app.Configuration.GetSection(); //Faz o parse do settings pra uma classe... 
-LoadConfiguration(app);
+//LoadConfiguration(app);
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStaticFiles();
 
 app.MapControllers();
 
 app.Run();
 
 
-void ConfigureAuthentication(WebApplicationBuilder app)
+void ConfigureAuthentication(WebApplicationBuilder builder)
 {
     var key = Encoding.ASCII.GetBytes(Configuration.JwtKey);
     builder.Services.AddAuthentication(x =>
@@ -68,6 +67,7 @@ void ConfigureServices(WebApplicationBuilder builder)
 {
     builder.Services.AddDbContext<BlogDataContext>();
     builder.Services.AddTransient<TokenService>();
+    builder.Services.AddTransient<EmailService>();
     //builder.Services.AddTransient(); //sempre criará um novo.
     //builder.Services.AddScoped(); // é por transação/Requisição
     //builder.Services.AddSingleton(); // 1por app, mantem na memoria.

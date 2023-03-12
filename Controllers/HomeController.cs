@@ -10,7 +10,7 @@ namespace AspNetBlog.Controllers
     {   
         //HealthCheck
         [HttpGet("")]
-        [ApiKey]
+        //[ApiKey]
         public IActionResult Get()
         {
             return Ok();

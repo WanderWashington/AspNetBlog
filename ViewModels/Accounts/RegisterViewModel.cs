@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AspNetBlog.ViewModels
+namespace AspNetBlog.ViewModels.Accounts
 {
     public class RegisterViewModel
     {
-        [Required(ErrorMessage= "O nome é obrigatório")]
+        [Required(ErrorMessage = "O nome é obrigatório")]
         public string Name { get; set; }
 
         [Required(ErrorMessage = "O E-mail é obrigatório")]

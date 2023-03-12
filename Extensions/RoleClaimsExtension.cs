@@ -9,10 +9,11 @@ namespace AspNetBlog.Extensions
         {
             var result = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Email)
+                new Claim(ClaimTypes.Name, user.Email)
             };
 
-            result.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role.Slug)));
+            result.AddRange(
+                user.Roles.Select(role => new Claim(ClaimTypes.Role, role.Slug)));
             return result;
         }
 
