@@ -3,6 +3,7 @@ using AspNetBlog.Data;
 using AspNetBlog.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IO.Compression;
 using System.Text;
@@ -14,16 +15,25 @@ ConfigureAuthentication(builder);
 ConfigureMvc(builder);
 ConfigureServices(builder);
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 //app.Configuration.GetSection(); //Faz o parse do settings pra uma classe... 
 //LoadConfiguration(app);
-
+app.UseHttpsRedirection(); //permite redirecionamentos https.
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseResponseCompression();
 app.MapControllers();
 app.UseStaticFiles();
+app.UseResponseCompression();
 
+if (app.Environment.IsDevelopment())
+{
+    Console.WriteLine("Developer environment");
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.Run();
 
@@ -89,7 +99,8 @@ void ConfigureMvc(WebApplicationBuilder builder)
 
 void ConfigureServices(WebApplicationBuilder builder)
 {
-    builder.Services.AddDbContext<BlogDataContext>();
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    builder.Services.AddDbContext<BlogDataContext>(options => options.UseSqlServer(connectionString));
     builder.Services.AddTransient<TokenService>();
     builder.Services.AddTransient<EmailService>();
     //builder.Services.AddTransient(); //sempre criará um novo.
