@@ -2,8 +2,11 @@ using AspNetBlog;
 using AspNetBlog.Data;
 using AspNetBlog.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.IdentityModel.Tokens;
+using System.IO.Compression;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,9 +20,10 @@ var app = builder.Build();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseResponseCompression();
+app.MapControllers();
 app.UseStaticFiles();
 
-app.MapControllers();
 
 app.Run();
 
@@ -56,11 +60,31 @@ void LoadConfiguration(WebApplication app)
 
 void ConfigureMvc(WebApplicationBuilder builder)
 {
-    builder.Services.AddControllers()
-    .ConfigureApiBehaviorOptions(options =>
+    builder.Services.AddMemoryCache(); // usando cache de memoria;
+    builder.Services.AddResponseCompression(options =>
     {
-        options.SuppressModelStateInvalidFilter = true;
-    });//inibe a validação automatica do aspnet do modelo. ModelState.IsValid example.
+        options.Providers.Add<GzipCompressionProvider>();
+        options.EnableForHttps = true;
+        //options.Providers.Add<CustomCompressionProvider>();
+    });
+    builder
+        .Services
+        .Configure<GzipCompressionProviderOptions>(options =>
+        {
+            options.Level = CompressionLevel.Optimal;
+        });
+    builder
+        .Services
+        .AddControllers()
+        .ConfigureApiBehaviorOptions(options =>
+        {
+            options.SuppressModelStateInvalidFilter = true;
+            //inibe a validação automatica do aspnet do modelo. ModelState.IsValid example.
+        }).AddJsonOptions(x =>
+        {
+            x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            x.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault; //se estiver nulo, n renderiza na tela
+        });
 }
 
 void ConfigureServices(WebApplicationBuilder builder)

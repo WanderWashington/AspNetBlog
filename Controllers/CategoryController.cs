@@ -5,6 +5,7 @@ using AspNetBlog.ViewModels;
 using AspNetBlog.ViewModels.Categories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace AspNetBlog.Controllers
 {
@@ -13,11 +14,16 @@ namespace AspNetBlog.Controllers
     {
         [HttpGet("v1/categories")]
         public async Task<IActionResult> Get(
+            [FromServices] IMemoryCache cache,
             [FromServices] BlogDataContext context)
         {
             try
             {
-                var categories = await context.Categories.ToListAsync();
+                var categories = cache.GetOrCreate("CategoriesCache", entry =>
+                {
+                    entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
+                    return GetCategories(context);
+                });
                 return Ok(new ResultViewModel<List<Category>>(categories));
             }
             catch (DbUpdateException ex)
@@ -28,6 +34,11 @@ namespace AspNetBlog.Controllers
             {
                 return StatusCode(500, new ResultViewModel<List<Category>>(error: "05XE5 - Falha interna no servidor"));
             }
+        }
+
+        private List<Category> GetCategories(BlogDataContext context)
+        {
+            return context.Categories.ToList();
         }
 
         [HttpGet("v1/categories/{id:int}")]
